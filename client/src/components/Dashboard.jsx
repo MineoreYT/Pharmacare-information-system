@@ -38,15 +38,7 @@ const Dashboard = () => {
     }
   };
 
-  const transactions = [
-    { id: 1, item: 'Premium T-Shirt', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 2, item: 'Playstation 5', date: 'Jul 12th 2024', status: 'Pending', amount: '0.WEJS75NC' },
-    { id: 3, item: 'Hoodie Gembong', date: 'Jul 12th 2024', status: 'Pending', amount: '0.WEJS75NC' },
-    { id: 4, item: 'iPhone 15 Pro Max', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 5, item: 'Lotus', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 6, item: 'Starbucks', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 7, item: 'Tirek Dexstar T-Shirt', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' }
-  ];
+
 
   return (
     <div className="space-y-8">
