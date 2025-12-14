@@ -1,0 +1,19 @@
+{
+  "name": "pharmacy-information-system",
+  "version": "1.0.0",
+  "description": "Hospital Pharmacy Information System",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start"
+  },
+  "keywords": ["pharmacy", "hospital", "healthcare", "management"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
