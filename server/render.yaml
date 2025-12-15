@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pharmacare-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: pharmacare-super-secure-jwt-secret-2024
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: https://pharmacare-system.surge.sh
