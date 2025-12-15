@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
-import Login from './components/Login';
+import SimpleLogin from './components/SimpleLogin';
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -35,7 +35,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <Login />;
+    return <SimpleLogin />;
   }
 
   return (

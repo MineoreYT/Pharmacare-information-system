@@ -27,6 +27,19 @@ app.get('/', (req, res) => {
   res.json({ message: 'Pharmacy Information System API' });
 });
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working!', 
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth/register, /api/auth/login',
+      drugs: '/api/drugs',
+      inventory: '/api/inventory'
+    }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

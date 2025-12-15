@@ -1,42 +1,17 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const Login = () => {
+const SimpleLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    role: 'pharmacist',
-    profile: {
-      firstName: '',
-      lastName: '',
-      licenseNumber: '',
-      phone: ''
-    }
-  });
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState('pharmacist');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith('profile.')) {
-      const profileField = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        profile: {
-          ...prev.profile,
-          [profileField]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,9 +21,32 @@ const Login = () => {
     try {
       let result;
       if (isLogin) {
-        result = await login(formData.username, formData.password);
+        result = await login(username, password);
       } else {
-        result = await register(formData);
+        if (!firstName.trim()) {
+          setError('First name is required');
+          setLoading(false);
+          return;
+        }
+        if (!lastName.trim()) {
+          setError('Last name is required');
+          setLoading(false);
+          return;
+        }
+        
+        const registrationData = {
+          username,
+          email,
+          password,
+          role,
+          profile: {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            licenseNumber: '',
+            phone: ''
+          }
+        };
+        result = await register(registrationData);
       }
 
       if (!result.success) {
@@ -88,7 +86,8 @@ const Login = () => {
         {/* Main Form Card */}
         <div className="bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl p-8 border border-gray-200/50 ring-1 ring-black/5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-blue-500/5"></div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          
+          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             {error && (
               <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
                 <div className="flex">
@@ -103,33 +102,35 @@ const Login = () => {
                 </div>
               </div>
             )}
-          
+            
             <div className="space-y-5">
+              {/* Username */}
               <div className="group">
                 <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
                   Username
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                   <input
                     id="username"
-                    name="username"
                     type="text"
                     required
-                    value={formData.username}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="Enter your username"
                   />
                 </div>
               </div>
 
+              {/* Registration fields */}
               {!isLogin && (
                 <>
+                  {/* Email */}
                   <div className="group">
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                       Email Address
@@ -142,50 +143,53 @@ const Login = () => {
                       </div>
                       <input
                         id="email"
-                        name="email"
                         type="email"
                         required
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm"
                         placeholder="Enter your email"
                       />
                     </div>
                   </div>
 
+                  {/* First Name and Last Name */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group">
-                      <label htmlFor="profile.firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         First Name
                       </label>
-                      <input
-                        id="profile.firstName"
-                        name="profile.firstName"
-                        type="text"
-                        required
-                        value={formData.profile.firstName}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                        placeholder="First name"
+                      <div
+                        contentEditable
+                        suppressContentEditableWarning={true}
+                        onInput={(e) => setFirstName(e.target.textContent)}
+                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm min-h-[48px] flex items-center"
+                        style={{ 
+                          outline: 'none',
+                          lineHeight: '1.5'
+                        }}
+                        data-placeholder="First name"
                       />
                     </div>
                     <div className="group">
-                      <label htmlFor="profile.lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Last Name
                       </label>
-                      <input
-                        id="profile.lastName"
-                        name="profile.lastName"
-                        type="text"
-                        required
-                        value={formData.profile.lastName}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                        placeholder="Last name"
+                      <div
+                        contentEditable
+                        suppressContentEditableWarning={true}
+                        onInput={(e) => setLastName(e.target.textContent)}
+                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm min-h-[48px] flex items-center"
+                        style={{ 
+                          outline: 'none',
+                          lineHeight: '1.5'
+                        }}
+                        data-placeholder="Last name"
                       />
                     </div>
                   </div>
 
+                  {/* Role */}
                   <div className="group">
                     <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
                       Professional Role
@@ -193,10 +197,9 @@ const Login = () => {
                     <div className="relative">
                       <select
                         id="role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm appearance-none"
                       >
                         <option value="pharmacist">💊 Pharmacist</option>
                         <option value="pharmacy_tech">🔬 Pharmacy Technician</option>
@@ -213,35 +216,36 @@ const Login = () => {
                 </>
               )}
 
+              {/* Password */}
               <div className="group">
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                   Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
                   <input
                     id="password"
-                    name="password"
                     type="password"
                     required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white shadow-sm"
                     placeholder="Enter your password"
                   />
                 </div>
               </div>
             </div>
 
+            {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-6 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="group relative w-full flex justify-center py-3 px-6 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -273,11 +277,12 @@ const Login = () => {
               </button>
             </div>
 
+            {/* Toggle Button */}
             <div className="text-center pt-4">
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200 cursor-pointer p-3 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 relative z-10 block w-full"
               >
                 {isLogin ? (
                   <>
@@ -309,4 +314,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SimpleLogin;

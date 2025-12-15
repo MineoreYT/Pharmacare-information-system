@@ -90,7 +90,25 @@ router.post('/register', [
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    
+    // Handle specific database errors
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ 
+        message: 'Username or email already exists' 
+      });
+    }
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        errors: error.errors.map(e => e.message)
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

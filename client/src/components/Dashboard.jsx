@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     totalDrugs: 0,
     totalInventory: 0,
@@ -11,8 +14,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
@@ -20,33 +25,46 @@ const Dashboard = () => {
         drugsRes,
         inventoryRes
       ] = await Promise.all([
-        axios.get('/drugs?limit=1'),
-        axios.get('/inventory?limit=1')
+        axios.get('/drugs'),
+        axios.get('/inventory')
       ]);
 
+      // Calculate low stock alerts
+      const inventory = inventoryRes.data.inventory || [];
+      const lowStockItems = inventory.filter(item => 
+        item.quantity <= (item.minimumStock || 10)
+      );
+
+      // Calculate expiring items (within 30 days)
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      const expiringItems = inventory.filter(item => 
+        new Date(item.expiryDate) <= thirtyDaysFromNow
+      );
+
       setStats({
-        totalDrugs: drugsRes.data.total || 0,
-        totalInventory: inventoryRes.data.total || 0,
+        totalDrugs: drugsRes.data.drugs?.length || drugsRes.data.total || 0,
+        totalInventory: inventory.length || 0,
+        pendingPrescriptions: 0,
+        lowStockAlerts: lowStockItems.length,
+        expiringItems: expiringItems.length
+      });
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      // Set default values if API fails
+      setStats({
+        totalDrugs: 0,
+        totalInventory: 0,
         pendingPrescriptions: 0,
         lowStockAlerts: 0,
         expiringItems: 0
       });
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const transactions = [
-    { id: 1, item: 'Premium T-Shirt', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 2, item: 'Playstation 5', date: 'Jul 12th 2024', status: 'Pending', amount: '0.WEJS75NC' },
-    { id: 3, item: 'Hoodie Gembong', date: 'Jul 12th 2024', status: 'Pending', amount: '0.WEJS75NC' },
-    { id: 4, item: 'iPhone 15 Pro Max', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 5, item: 'Lotus', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 6, item: 'Starbucks', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' },
-    { id: 7, item: 'Tirek Dexstar T-Shirt', date: 'Jul 12th 2024', status: 'Completed', amount: '0.WEJS75NC' }
-  ];
+  
 
   return (
     <div className="space-y-8">
@@ -84,13 +102,13 @@ const Dashboard = () => {
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gray-600 mb-2 tracking-wide uppercase">Total Drugs</p>
-              <p className="text-3xl font-bold text-gray-900 tracking-tight">
+              <div className="text-3xl font-bold text-gray-900 tracking-tight">
                 {loading ? (
                   <div className="animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 h-8 w-16 rounded-lg"></div>
                 ) : (
                   <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">{stats.totalDrugs}</span>
                 )}
-              </p>
+              </div>
             </div>
             <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg ring-4 ring-blue-100/50 group-hover:scale-110 transition-transform duration-300">
               <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,13 +123,13 @@ const Dashboard = () => {
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gray-600 mb-2 tracking-wide uppercase">Inventory Items</p>
-              <p className="text-3xl font-bold text-gray-900 tracking-tight">
+              <div className="text-3xl font-bold text-gray-900 tracking-tight">
                 {loading ? (
                   <div className="animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 h-8 w-16 rounded-lg"></div>
                 ) : (
                   <span className="bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">{stats.totalInventory}</span>
                 )}
-              </p>
+              </div>
             </div>
             <div className="p-4 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg ring-4 ring-green-100/50 group-hover:scale-110 transition-transform duration-300">
               <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,13 +144,13 @@ const Dashboard = () => {
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gray-600 mb-2 tracking-wide uppercase">Pending Prescriptions</p>
-              <p className="text-3xl font-bold text-gray-900 tracking-tight">
+              <div className="text-3xl font-bold text-gray-900 tracking-tight">
                 {loading ? (
                   <div className="animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 h-8 w-16 rounded-lg"></div>
                 ) : (
                   <span className="bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">{stats.pendingPrescriptions}</span>
                 )}
-              </p>
+              </div>
             </div>
             <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg ring-4 ring-purple-100/50 group-hover:scale-110 transition-transform duration-300">
               <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,13 +165,13 @@ const Dashboard = () => {
           <div className="relative flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gray-600 mb-2 tracking-wide uppercase">Low Stock Alerts</p>
-              <p className="text-3xl font-bold text-gray-900 tracking-tight">
+              <div className="text-3xl font-bold text-gray-900 tracking-tight">
                 {loading ? (
                   <div className="animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 h-8 w-16 rounded-lg"></div>
                 ) : (
                   <span className="bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">{stats.lowStockAlerts}</span>
                 )}
-              </p>
+              </div>
             </div>
             <div className="p-4 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg ring-4 ring-red-100/50 group-hover:scale-110 transition-transform duration-300">
               <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
