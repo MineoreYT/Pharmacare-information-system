@@ -3,6 +3,10 @@ const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: './pharmacy_system.db',
+  dialectModule: require('better-sqlite3'),
+  dialectOptions: {
+    // better-sqlite3 options
+  },
   logging: false, // Set to console.log to see SQL queries
 });
 
