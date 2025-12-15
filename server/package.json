@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "build": "echo 'No build step required for Node.js backend'",
-    "postinstall": "node createTestUser.js || echo 'Test user creation skipped'"
+    "build": "npm rebuild sqlite3",
+    "postinstall": "npm rebuild sqlite3 && (node createTestUser.js || echo 'Test user creation skipped')"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -17,7 +17,7 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
     "sequelize": "^6.37.7",
-    "better-sqlite3": "^9.2.2"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
